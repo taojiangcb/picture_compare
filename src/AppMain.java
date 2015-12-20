@@ -105,34 +105,58 @@ public class AppMain {
 						continue;
 					}
 					output_num.add(it.crcnum);
-					out_put_list.remove(0);
+					
+					BufferedInputStream inStream = null;
+					BufferedOutputStream outStream = null;
 					try {
 						File outFile = new File(out_put_url + it.parentDirectory + "\\" + it.file_name);
-	
-						
 						if(!outFile.getParentFile().exists()) {
-							//outFile.createNewFile();
 							outFile.getParentFile().mkdirs();
 						}
 						
 						if(outFile.exists()) outFile.createNewFile();
 						
-						BufferedInputStream inStream = new BufferedInputStream(new FileInputStream(it.url));
-						BufferedOutputStream outStream = new BufferedOutputStream(new FileOutputStream(outFile));
-						
+						inStream = new BufferedInputStream(new FileInputStream(it.url));
+						outStream = new BufferedOutputStream(new FileOutputStream(outFile));
 					
-						byte[] buf = new byte[inStream.available()];
-						if (inStream.read(buf) > -1) {
-							outStream.write(buf);
-							System.out.println("------------------");
+						//byte[] buf = new byte[inStream.available()];
+						byte[] buf = new byte[512];
+						int bufflen = 0;
+						while((bufflen = inStream.read(buf)) != -1) {
+							outStream.write(buf, 0, bufflen);
 						}
+//						if (inStream.read(buf) > -1) {
+//							outStream.write(buf);
+//						}
+						
+						System.out.println("------------------");
 						
 						inStream.close();
 						outStream.close();
 						
+						out_put_list.remove(it);
+						
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
+						if(inStream != null) {
+							try {
+								inStream.close();
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						}
+						if(outStream != null) {
+							try {
+								outStream.close();
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						}
+						out_put_list.remove(it);
+						continue;
 					}
 				}
 			}
